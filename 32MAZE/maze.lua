@@ -3,84 +3,123 @@
 Maze = {}
 Maze.__index = Maze
 
-function Maze.generate(size)
-	local maze = setmetatable({size = size, grid = {}}, Maze)
+-- Tile: the actual thing that is in the "game board"
+Tile = {
+	x = 0,
+	y = 0,
+	content = "#"
+}
+Tile.__index = Tile
+
+function Tile:__tostring()
+	return self.content
+end
+
+function Tile.new(x,y,tile)
+	return setmetatable({x = x, y = y, content = tile}, Tile)
+end
+
+-- Node: an abstract representation of key crossing points that we use to generate the maze
+Node = {
+	x = 0,
+	y = 0,
+	paths = {left = false, up = false, down = false, right = false}
+}
+Node.__index = Node
 	
-	for y = 1,size do
-		table.insert(maze.grid, {})
-		for x = 1,size do
-			table.insert(maze.grid[y],'#')
+function Node.new(x,y)
+	return setmetatable({x = x, y = y}, Node)
+end
+
+function Maze.generate(size)
+	math.randomseed(os.time())
+	local direction = {"left", "up", "right", "down"}
+	local board_size = size*2+1
+	local maze = setmetatable({size = size, board_size = board_size, tiles = {}, nodes = {}}, Maze)
+	
+	for Y = 1, board_size do
+		table.insert(maze.tiles, {})
+		if Y % 2 == 0 then table.insert(maze.nodes, {}) end
+		for X = 1,board_size do
+			if X % 2 == 0 and Y % 2 == 0 then
+				table.insert(maze.tiles[Y],Tile.new(X,Y," "))
+				table.insert(maze.nodes[Y/2],Node.new(X/2, Y/2))
+			else
+				table.insert(maze.tiles[Y],Tile.new(X,Y,"#"))
+			end
+		end
+	end	
+	
+	-- Total randomness test!
+	for x = 1,size do
+		for y = 1,size do
+			maze:updateNode(x,y,"left", math.random(2) == 1)
+			maze:updateNode(x,y,"right", math.random(2) == 1)
+			maze:updateNode(x,y,"up", math.random(2) == 1)
+			maze:updateNode(x,y,"down", math.random(2) == 1)
 		end
 	end
-	
-	local m_start = maze:getRandomWallPoint()
-	maze.grid[m_start[2]][m_start[1]] = " "
-	
-	local turns = math.random(5) + 3
-	local prev_turnpoint = m_start
-	repeat
-		local turnpoint
-		repeat
-			turnpoint = { math.random(size), math.random(size) }
-		until prev_turnpoint[1] == turnpoint[1] or prev_turnpoint[2] == turnpoint[2]
-		
-		if prev_turnpoint[1] == turnpoint[1] then
-			if prev_turnpoint[2] > turnpoint[2] then
-				for y = turnpoint[2],prev_turnpoint[2] do
-					maze.grid[y][turnpoint[1]] = " "
-				end
-			elseif prev_turnpoint[2] < turnpoint[2] then
-				for y = prev_turnpoint[2],turnpoint[2] do
-					maze.grid[y][turnpoint[1]] = " "
-				end
-			end
-		elseif prev_turnpoint[2] == turnpoint[2] then
-			if prev_turnpoint[1] > turnpoint[1] then
-				for x = turnpoint[1],prev_turnpoint[1] do
-					maze.grid[turnpoint[2]][x] = " "
-				end
-			elseif prev_turnpoint[1] < turnpoint[1] then
-				for x = prev_turnpoint[1],turnpoint[1] do
-					maze.grid[turnpoint[2]][x] = " "
-				end
-			end
-		end
-		
-		prev_turnpoint = turnpoint
-		
-		turns = turns - 1
-	until turns == 0
 	
 	return maze
 end
 
-function Maze:getRandomWallPoint()
-	math.randomseed(os.time())
-	local side = math.random(4)
+function Maze:getTile(x,y)
+	return self.tiles[y][x]
+end
+
+function Maze:getNode(x,y)
+	return self.nodes[y][x]
+end
+
+-- When changing the paths of nodes, make sure the connections are 2-way
+function Maze:updateNode(x,y,dir,state)
+	local main = self:getNode(x,y)
+	main.paths[dir] = state
 	
-	if side == 1 then -- LEFT
-		return { 1, math.random(self.size) }
-	elseif side == 2 then -- TOP
-		return { math.random(self.size), 1 }
-	elseif side == 3 then -- RIGHT
-		return { self.size, math.random(self.size) }
-	elseif side == 4 then -- BOTTOM
-		return { math.random(self.size), self.size }
+	local content
+	if state then
+		content = " "
+	else
+		content = "#"
 	end
 	
-	return nil
+	if dir == "left" then		
+		self:getTile(x*2 - 1, y*2).content = content
+	elseif dir == "right" then		
+		self:getTile(x*2 + 1, y*2).content = content
+	elseif dir == "up" then		
+		self:getTile(x*2, y*2 - 1).content = content
+	elseif dir == "down" then		
+		self:getTile(x*2, y*2 + 1).content = content
+	end
+	
+	if dir == "left" and x > 1 then
+		self:getNode(x-1,y).paths["right"] = state
+	end
+	
+	if dir == "right" and x < self.size then
+		self:getNode(x+1,y).paths["left"] = state
+	end
+	
+	if dir == "up" and y > 1 then
+		self:getNode(x,y-1).paths["down"] = state
+	end
+	
+	if dir == "down" and y < self.size then
+		self:getNode(x,y+1).paths["up"] = state
+	end
 end
 
 function Maze:print()
-	for y = 1,self.size do
-		local row = self.grid[y]
+	for y = 1,self.board_size do
+		local row = self.tiles[y]
 		local line = ""
-		for x = 1,self.size do
-			line = line..self.grid[y][x]
+		for x = 1,self.board_size do
+			line = line .. tostring(self.tiles[y][x])
 		end
 		print(line)
 	end
 end
 
-M = Maze.generate(32)
+M = Maze.generate(16)
 M:print()
