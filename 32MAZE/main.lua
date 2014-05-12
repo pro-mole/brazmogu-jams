@@ -2,11 +2,10 @@
 
 require("maze")
 
-
-
 function love.load()
+	player_x, player_y = 16,30
 	_maze = Maze.generate(15)
-	player_x, player_y = 16,16
+	_maze:print()
 	scale = love.window.getWidth()/32
 	print(string.format("%dX", scale))
 end

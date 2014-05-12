@@ -6,8 +6,10 @@ require("node")
 Maze = {}
 Maze.__index = Maze
 
+seed = 0
+
 function Maze.generate(size)
-	math.randomseed(os.time())
+	math.randomseed(os.time() + seed)
 	local direction = {"left", "up", "right", "down"}
 	local board_size = size*2+1
 	local maze = setmetatable({size = size, board_size = board_size, tiles = {}, nodes = {}}, Maze)
@@ -26,24 +28,84 @@ function Maze.generate(size)
 	end	
 	
 	-- Total randomness test!
-	for x = 1,size do
-		for y = 1,size do
-			maze:updateNode(x,y,"left", math.random(2) == 1)
-			maze:updateNode(x,y,"right", math.random(2) == 1)
-			maze:updateNode(x,y,"up", math.random(2) == 1)
-			maze:updateNode(x,y,"down", math.random(2) == 1)
-		end
+	--maze:generatRandomly()
+	if not maze:generatePrim({8,15}) then
+		maze:print()
+		seed = seed + 1
+		maze = Maze.generate(size)
 	end
 	
 	return maze
 end
 
+function Maze:generateRandomly()
+	-- Generate maze totally randomly setting up the exits on each node
+	for x = 1,self.size do
+		for y = 1,self.size do
+			self:updateNode(x,y,"left", math.random(2) == 1)
+			self:updateNode(x,y,"right", math.random(2) == 1)
+			self:updateNode(x,y,"up", math.random(2) == 1)
+			self:updateNode(x,y,"down", math.random(2) == 1)
+		end
+	end
+end
+
+function Maze:generatePrim(start_node)
+	-- Use modified Prim's Algorithm to create the maze
+	-- Not sure if this will work as I intended, but will probably be good enough for now
+	local N = self:getNode(unpack(start_node))
+	N.visited = true
+	
+	local V = {N}-- list of visited nodes
+	
+	local direction = {"left", "up", "right", "down"}
+	local delta = {left = {-1,0}, up = {0,-1}, right = {1,0}, down = {0,1}}
+	while #V < self.size^2 do -- When all size^2 are visited, stop
+		N = V[math.random(#V)]
+		local dir = direction[math.random(4)]
+		local _N = self:getNode(N.x + delta[dir][1], N.y + delta[dir][2])
+		
+		if _N ~= nil and not _N.visited then
+			self:updateNode(N.x, N.y, dir, true)
+			_N.visited = true
+			table.insert(V, _N)
+			-- self:print()
+			-- love.timer.sleep(0.5)
+		end
+	end
+	
+	return true
+end
+
+function Maze:generateWindingPath(start_node, end_node)
+	-- In this method we generate a winding path from one end to the other of the maze
+	-- The "winding path" is defined as a path that is deliberately suboptimal(not the quickest to the end) and does not cross itself(no shortcuts)]]
+	local direction = {"left", "up", "right", "down"}
+	local turn = {left = {"up","down"}, up = {"left","right"}, right = {"down","up"}, down = {"right","left"}}
+	local delta = {left = {-1,0}, up = {0,-1}, right = {1,0}, down = {0,1}}
+	local Sx,Sy = unpack(start_node)
+	local S = self:getNode(Sx, Sy)
+	local Ex,Ey = unpack(end_node)
+	local E = self:getNode(Ex, Ey)
+	
+	-- With the winding path created, now we connect every other 
+	return true
+end
+
 function Maze:getTile(x,y)
-	return self.tiles[y][x]
+	if x < 1 or x > self.board_size or y < 1 or y > self.board_size then
+		return nil
+	else
+		return self.tiles[y][x]
+	end
 end
 
 function Maze:getNode(x,y)
-	return self.nodes[y][x]
+	if x < 1 or x > self.size or y < 1 or y > self.size then
+		return nil
+	else
+		return self.nodes[y][x]
+	end
 end
 
 -- When changing the paths of nodes, make sure the connections are 2-way
@@ -90,11 +152,13 @@ function Maze:print()
 		local row = self.tiles[y]
 		local line = ""
 		for x = 1,self.board_size do
-			line = line .. tostring(self.tiles[y][x])
+			if x == player_x and y == player_y then
+				line = line .. "o"
+			else
+				line = line .. tostring(self:getTile(x,y))
+			end
 		end
 		print(line)
 	end
+	io.stdout:flush()
 end
-
-M = Maze.generate(16)
-M:print()

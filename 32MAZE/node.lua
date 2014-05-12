@@ -3,10 +3,11 @@
 Node = {
 	x = 0,
 	y = 0,
+	visited = false,
 	paths = {left = false, up = false, down = false, right = false}
 }
 Node.__index = Node
 	
 function Node.new(x,y)
-	return setmetatable({x = x, y = y}, Node)
+	return setmetatable({x = x, y = y, paths = {left = false, up = false, down = false, right = false}}, Node)
 end
