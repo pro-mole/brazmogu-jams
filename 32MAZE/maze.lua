@@ -8,7 +8,7 @@ Maze.__index = Maze
 
 seed = 0
 
-function Maze.generate(size)
+function Maze.generate(size, exit_wall)
 	math.randomseed(os.time() + seed)
 	local direction = {"left", "up", "right", "down"}
 	local board_size = size*2+1
@@ -33,6 +33,17 @@ function Maze.generate(size)
 		maze:print()
 		seed = seed + 1
 		maze = Maze.generate(size)
+	end
+	
+	-- Add exit
+	if exit_wall == "up" then
+		maze:setTile(math.random(size)*2,1," ")
+	elseif exit_wall == "down" then
+		maze:setTile(math.random(size)*2,size," ")
+	elseif exit_wall == "left" then
+		maze:setTile(1,math.random(size)*2," ")
+	elseif exit_wall == "right" then
+		maze:setTile(size,math.random(size)*2," ")
 	end
 	
 	return maze
@@ -97,6 +108,12 @@ function Maze:getTile(x,y)
 		return nil
 	else
 		return self.tiles[y][x]
+	end
+end
+
+function Maze:setTile(x,y,tile)
+	if x >= 1 and x <= self.board_size and y >= 1 and y <= self.board_size then
+		self.tiles[y][x].content = tile
 	end
 end
 

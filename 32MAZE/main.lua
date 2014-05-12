@@ -4,7 +4,7 @@ require("maze")
 
 function love.load()
 	player_x, player_y = 16,30
-	_maze = Maze.generate(15)
+	_maze = Maze.generate(15,"up")
 	_maze:print()
 	scale = love.window.getWidth()/32
 	print(string.format("%dX", scale))
@@ -13,8 +13,13 @@ end
 function love.keypressed(key, isrepeat)
 	if key == "up" or key == "down" or key == "left" or key == "right" then
 		local delta = {up = {0,-1}, down = {0,1}, left = {-1,0}, right = {1,0}}
-		player_x = player_x + delta[key][1]
-		player_y = player_y + delta[key][2]
+		local _x = player_x + delta[key][1]
+		local _y = player_y + delta[key][2]
+		local T = _maze:getTile(_x,_y)
+		if T.content ~= "#" then
+			player_x = _x
+			player_y = _y
+		end
 	end
 end
 
@@ -39,8 +44,10 @@ function love.draw()
 				love.graphics.rectangle("fill", 1, 2, 7, 5)
 			end
 
-			if tile.content == "#" then
-				love.graphics.rectangle("fill", 1, 1, 7, 7)
+			if tile != nil then
+				if tile.content == "#" then
+					love.graphics.rectangle("fill", 1, 1, 7, 7)
+				end
 			end
 			love.graphics.pop()
 		end
