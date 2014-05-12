@@ -1,35 +1,10 @@
 -- Maze generator for LOST IN MAZE
 
+require("tile")
+require("node")
+
 Maze = {}
 Maze.__index = Maze
-
--- Tile: the actual thing that is in the "game board"
-Tile = {
-	x = 0,
-	y = 0,
-	content = "#"
-}
-Tile.__index = Tile
-
-function Tile:__tostring()
-	return self.content
-end
-
-function Tile.new(x,y,tile)
-	return setmetatable({x = x, y = y, content = tile}, Tile)
-end
-
--- Node: an abstract representation of key crossing points that we use to generate the maze
-Node = {
-	x = 0,
-	y = 0,
-	paths = {left = false, up = false, down = false, right = false}
-}
-Node.__index = Node
-	
-function Node.new(x,y)
-	return setmetatable({x = x, y = y}, Node)
-end
 
 function Maze.generate(size)
 	math.randomseed(os.time())
