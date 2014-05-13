@@ -28,7 +28,9 @@ function Maze.generate(size, exit_wall)
 	end	
 	
 	-- Total randomness test!
-	--maze:generatRandomly()
+	-- maze:generatRandomly()
+	
+	-- Prim-based generation: a lot cleaner, at least
 	if not maze:generatePrim({8,15}) then
 		maze:print()
 		seed = seed + 1
@@ -44,6 +46,33 @@ function Maze.generate(size, exit_wall)
 		maze:setTile(1,math.random(size)*2," ")
 	elseif exit_wall == "right" then
 		maze:setTile(size,math.random(size)*2," ")
+	end
+	
+	-- Terminal nodes and crossroads will contain events(hazards, messages, stuff like that)
+	local T = {}
+	local C = {}
+	for X = 1,size do
+		for Y = 1,size do
+			local N = maze:getNode(X,Y)
+			local exits = N:getExits()
+			if exits == 1 then
+				table.insert(T, N)
+			elseif exits == 4 then
+				table.insert(C, N)
+			end
+		end
+	end
+		
+	for _,term in ipairs(T) do
+		local colors = {{255,0,0,255}, {255,255,0,255}, {255,128,0,255}, {128,0,255,255}}
+		local types = {"dead end", "setback", "refusal"}
+		term.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
+	end
+	
+	for _,cross in ipairs(C) do
+		local colors = {{255,255,255,255}, {128,128,128,255}, {0,255,255,255}}
+		local types = {"question", "epiphany", "random"}
+		cross.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
 	end
 	
 	return maze
@@ -66,8 +95,9 @@ function Maze:generatePrim(start_node)
 	-- Not sure if this will work as I intended, but will probably be good enough for now
 	local N = self:getNode(unpack(start_node))
 	N.visited = true
+	N.cost = 0
 	
-	local V = {N}-- list of visited nodes
+	local V = {N} -- list of visited nodes
 	
 	local direction = {"left", "up", "right", "down"}
 	local delta = {left = {-1,0}, up = {0,-1}, right = {1,0}, down = {0,1}}
@@ -79,6 +109,7 @@ function Maze:generatePrim(start_node)
 		if _N ~= nil and not _N.visited then
 			self:updateNode(N.x, N.y, dir, true)
 			_N.visited = true
+			_N.cost = N.cost + 1
 			table.insert(V, _N)
 			-- self:print()
 			-- love.timer.sleep(0.5)
@@ -171,6 +202,8 @@ function Maze:print()
 		for x = 1,self.board_size do
 			if x == player_x and y == player_y then
 				line = line .. "o"
+			elseif x % 2 == 0 and y % 2 == 0 then
+				line = line .. tostring(self:getNode(x/2,y/2))
 			else
 				line = line .. tostring(self:getTile(x,y))
 			end

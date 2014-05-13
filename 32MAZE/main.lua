@@ -27,26 +27,38 @@ function love.update(dt)
 end
 
 function love.draw()
+	love.graphics.setColor(255,255,255,255)
 	love.graphics.scale(scale,scale)
 	
-	love.graphics.line(10,0,10,31)
-	love.graphics.line(21,0,21,31)
-	love.graphics.line(0,10,31,10)
-	love.graphics.line(0,21,31,21)
+	-- Do NOT use love.graphics.line, since LÖVE seems to draw scaled lines centered on the end points
+	love.graphics.rectangle("fill",10,0,1,32)
+	love.graphics.rectangle("fill",21,0,1,32)
+	love.graphics.rectangle("fill",0,10,32,1)
+	love.graphics.rectangle("fill",0,21,32,1)
 
 	for x = -1,1 do
 		for y = -1,1 do
+			local _x = player_x + x
+			local _y = player_y + y
 			love.graphics.push()
 			love.graphics.translate((x+1)*11, (y+1)*11)
-			local tile = _maze:getTile(player_x + x, player_y + y)
 			if x == 0 and y == 0 then
-				love.graphics.rectangle("fill", 2, 1, 5, 7)
-				love.graphics.rectangle("fill", 1, 2, 7, 5)
-			end
-
-			if tile != nil then
-				if tile.content == "#" then
-					love.graphics.rectangle("fill", 1, 1, 7, 7)
+				love.graphics.setColor(255,255,255,255)
+				love.graphics.rectangle("fill", 3, 1, 4, 8)
+				love.graphics.rectangle("fill", 2, 2, 6, 6)
+				love.graphics.setColor(0,0,0,255)
+				love.graphics.rectangle("fill", 3, 4, 1, 1)
+				love.graphics.rectangle("fill", 6, 4, 1, 1)
+				love.graphics.rectangle("fill", 3, 6, 4, 1)
+			elseif _x % 2 == 0 and _y % 2 == 0 then
+				local node = _maze:getNode(_x/2, _y/2)
+				if node ~= nil then
+					node:draw()
+				end
+			else
+				local tile = _maze:getTile(_x, _y)
+				if tile ~= nil then
+					tile:draw()
 				end
 			end
 			love.graphics.pop()

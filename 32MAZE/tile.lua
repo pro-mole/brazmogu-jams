@@ -14,3 +14,10 @@ end
 function Tile.new(x,y,tile)
 	return setmetatable({x = x, y = y, content = tile}, Tile)
 end
+
+function Tile:draw()
+	if self.content == "#" then
+		love.graphics.setColor(255,255,255,255)
+		love.graphics.rectangle("fill", 1, 1, 8, 8)
+	end
+end
