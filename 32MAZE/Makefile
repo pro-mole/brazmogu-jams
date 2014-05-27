@@ -7,7 +7,7 @@ PACKNAME=$(EXECNAME)-$(VERSION).love
 all: $(PACKNAME)
 
 $(PACKNAME): *.lua
-	zip -9 -q -r $(PACKNAME) *.lua
+	zip -9 -q -r $(PACKNAME) *.lua assets
 	
 run: all
 	#open -n -a love ./

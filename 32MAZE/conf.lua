@@ -3,6 +3,7 @@ function love.conf(t)
 	t.version = "0.9.0"
 
 	t.window.title = "LOST IN MAZE"
+    t.window.icon = "assets/icon/MAZE.png"
 
 	t.window.width = 640
 	t.window.height = 640
