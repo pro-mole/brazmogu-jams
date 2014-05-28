@@ -8,6 +8,10 @@ Maze.__index = Maze
 
 seed = 0
 
+Maze.tileset = love.graphics.newImage("assets/sprite/tiles.png")
+
+Maze.tileset:setFilter("nearest","nearest")
+
 function Maze.generate(size, exit_wall)
 	math.randomseed(os.time() + seed)
 	local direction = {"left", "up", "right", "down"}
