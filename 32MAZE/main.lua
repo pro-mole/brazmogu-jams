@@ -2,6 +2,8 @@
 
 require("maze")
 
+sound_step = love.audio.newSource("assets/sound/step.wav")
+
 function love.load()
 	player_x, player_y = 16,30
 	_maze = Maze.generate(15,"up")
@@ -16,9 +18,10 @@ function love.keypressed(key, isrepeat)
 		local _x = player_x + delta[key][1]
 		local _y = player_y + delta[key][2]
 		local T = _maze:getTile(_x,_y)
-		if T.content ~= "#" then
+		if T.content ~= "#" and not sound_step:isPlaying() then
 			player_x = _x
 			player_y = _y
+			sound_step:play()
 		end
 	end
 end
