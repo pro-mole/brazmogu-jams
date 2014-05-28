@@ -1,0 +1,11 @@
+# Configuration file for releases
+
+# WIN
+icoName="MAZE.ico"
+
+# MAC OS
+bundleIdentifier="com.brazmogu.example"
+bundleName="LOST IN MAZE"
+icnsName="MAZE.icns"
+
+# LINUX

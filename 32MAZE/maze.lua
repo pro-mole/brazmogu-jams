@@ -68,14 +68,14 @@ function Maze.generate(size, exit_wall)
 	end
 		
 	for _,term in ipairs(T) do
-		local colors = {{255,0,0,255}, {255,255,0,255}, {255,128,0,255}, {128,0,255,255}}
-		local types = {"dead end", "setback", "refusal"}
+		local colors = {{255,0,0}, {255,255,0}, {255,128,0}, {128,0,255}}
+		local types = {"dead end", "setback"}
 		term.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
 	end
 	
 	for _,cross in ipairs(C) do
-		local colors = {{255,255,255,255}, {128,128,128,255}, {0,255,255,255}}
-		local types = {"question", "epiphany", "random"}
+		local colors = {{192,192,192}, {128,128,128}, {0,255,255}}
+		local types = {"crossroads"}
 		cross.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
 	end
 	
