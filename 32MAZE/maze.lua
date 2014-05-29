@@ -43,14 +43,19 @@ function Maze.generate(size, exit_wall)
 	
 	-- Add exit
 	if exit_wall == "up" then
-		maze:setTile(math.random(size)*2,1," ")
+		maze.end_x = math.random(size)*2
+		maze.end_y = 1
 	elseif exit_wall == "down" then
-		maze:setTile(math.random(size)*2,size," ")
+		maze.end_x = math.random(size)*2
+		maze.end_y = size
 	elseif exit_wall == "left" then
-		maze:setTile(1,math.random(size)*2," ")
+		maze.end_y = math.random(size)*2
+		maze.end_x = 1
 	elseif exit_wall == "right" then
-		maze:setTile(size,math.random(size)*2," ")
+		maze.end_y = math.random(size)*2
+		maze.end_x = size
 	end
+	maze:setTile(maze.end_x, maze.end_y, " ")
 	
 	-- Terminal nodes and crossroads will contain events(hazards, messages, stuff like that)
 	local T = {}

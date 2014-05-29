@@ -14,6 +14,9 @@ end
 
 function love.load()
 	title_card = loadCard("title")
+	good_end = loadCard("end")
+	bad_end = loadCard("badend")
+
 	scale = love.window.getWidth()/32
 	print(string.format("%dX", scale))
 end
@@ -35,16 +38,27 @@ function love.keypressed(key, isrepeat)
 			local delta = {up = {0,-1}, down = {0,1}, left = {-1,0}, right = {1,0}}
 			local _x = player_x + delta[key][1]
 			local _y = player_y + delta[key][2]
-			local T = _maze:getTile(_x,_y)
-			if T.content ~= "#" and not sound_step:isPlaying() then
-				player_x = _x
-				player_y = _y
-				sound_step:play()
+			if _x < 1 or _x > _maze.board_size or _y < 1 or _y > _maze.board_size then
+				table.insert(game_stack,"end")
+			else
+				local T = _maze:getTile(_x,_y)
+				if T.content ~= "#" and not sound_step:isPlaying() then
+					player_x = _x
+					player_y = _y
+					sound_step:play()
+				end
 			end
 		end
 		
 		if key == "escape" then
 			table.remove(game_stack)
+		end
+	elseif top == "end" or top == "badend" then
+		if key == "escape" then love.event.quit() end
+		if key == " " then
+			repeat
+				table.remove(game_stack)
+			until #game_stack == 1
 		end
 	end
 end
@@ -98,6 +112,9 @@ function love.draw()
 			end
 		end
 	else -- Draw Event Card
+		if top == "end" then
+			love.graphics.draw(good_end, 0, 0)
+		end
 	end
 end
 
