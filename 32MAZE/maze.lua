@@ -57,31 +57,77 @@ function Maze.generate(size, exit_wall)
 	end
 	maze:setTile(maze.end_x, maze.end_y, " ")
 	
+	-- Colorization; to add some orientation
+	-- First select our "quadrants"
+	local Q = {}
+	local colors = {
+		{0xff, 0x80, 0x00, 0xff},{0xff, 0xff, 0x00, 0xff},{0x00, 0xff, 0x00, 0xff},
+		{0xff, 0x00, 0x00, 0xff},{0xff, 0xff, 0xff, 0xff},{0x00, 0xff, 0xff, 0xff},
+		{0xff, 0x00, 0x80, 0xff},{0x80, 0x00, 0xff, 0xff},{0x00, 0x00, 0xff, 0xff}
+	}
+	local sect = 3
+	local sect_size = board_size/sect
+	for i = 1,sect^2 do
+		local h,k = (i-1) % sect + 1, math.ceil(i/sect)
+		local _x = math.random(size/sect) + size/sect * (h-1)
+		local _y = math.random(size/sect) + size/sect * (k-1)
+		
+		table.insert(Q, {x = _x*2, y = _y*2, color = colors[i]})
+		print(unpack({h, k, _x*2, _y*2, unpack(colors[i])}))
+	end
+	-- Now, colorize everything in terms of what's close, blending color
+	for X = 1,board_size do
+		for Y = 1,board_size do
+			local T = maze:getTile(X,Y)
+			local q = math.ceil(Y / sect_size) + math.floor(X / sect/size)
+			local _Q = Q[q]
+			if X == _Q.x and Y == _Q.y then
+				T.color = Q[q].color
+			else
+				T.color = {0,0,0,0}
+				for i,_Q in ipairs(Q) do
+					local d = math.abs(X - _Q.x) + math.abs(Y - _Q.y)
+					for j,C in ipairs(_Q.color) do
+						if d < sect_size*3 then T.color[j] = T.color[j] + C/d end
+					end
+				end
+				T.color[4] = 255
+			end
+		end
+	end
+	
 	-- Terminal nodes and crossroads will contain events(hazards, messages, stuff like that)
 	local T = {}
 	local C = {}
 	for X = 1,size do
 		for Y = 1,size do
-			local N = maze:getNode(X,Y)
-			local exits = N:getExits()
-			if exits == 1 then
-				table.insert(T, N)
-			elseif exits == 4 then
-				table.insert(C, N)
+			if not (X*2 == player_x and Y*2 == player_y) then
+				local N = maze:getNode(X,Y)
+				local exits = N:getExits()
+				if exits == 1 then
+					table.insert(T, N)
+				elseif exits == 4 then
+					table.insert(C, N)
+				end
 			end
 		end
 	end
 		
 	for _,term in ipairs(T) do
-		local colors = {{255,0,0}, {255,255,0}, {255,128,0}, {128,0,255}}
-		local types = {"dead end", "setback"}
-		term.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
+		local deadends = {
+			{{255,0,0}, "end", "deadend"},
+			{{255,128,0}, "cutscene", "setback"}
+		}
+		local ev = deadends[math.random(#deadends)]
+		term.event = {color = ev[1], name = ev[3], kind = ev[2]}
 	end
 	
 	for _,cross in ipairs(C) do
-		local colors = {{192,192,192}, {128,128,128}, {0,255,255}}
-		local types = {"crossroads"}
-		cross.event = {color = colors[math.random(#colors)], type = types[math.random(#types)]}
+		local crossroads = {
+			{{192,192,192}, "cutscene", "crossroads"}
+		}
+		local ev = crossroads[math.random(#crossroads)]
+		cross.event = {color = ev[1], name = ev[3], kind = ev[2]}
 	end
 	
 	return maze

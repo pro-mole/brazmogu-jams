@@ -12,12 +12,12 @@ function Tile:__tostring()
 end
 
 function Tile.new(x,y,tile)
-	return setmetatable({x = x, y = y, content = tile}, Tile)
+	return setmetatable({x = x, y = y, content = tile, color = {255,255,255,255}}, Tile)
 end
 
 function Tile:draw()
 	if self.content == "#" then
-		love.graphics.setColor(255,255,255,255)
+		love.graphics.setColor(unpack(self.color))
 		love.graphics.rectangle("fill", 1, 1, 8, 8)
 	end
 end
