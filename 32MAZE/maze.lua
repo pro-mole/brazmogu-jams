@@ -115,19 +115,22 @@ function Maze.generate(size, exit_wall)
 		
 	for _,term in ipairs(T) do
 		local deadends = {
-			{{255,0,0}, "end", "deadend"},
-			{{255,128,0}, "cutscene", "setback"}
+			{{255,0,0}, "deadend", "comfort"},
+			{{255,128,0}, "setback", "setback"}
 		}
 		local ev = deadends[math.random(#deadends)]
-		term.event = {color = ev[1], name = ev[3], kind = ev[2]}
+		term.event = {color = ev[1], name = ev[3], kind = ev[2], card = ev[4]}
 	end
 	
 	for _,cross in ipairs(C) do
-		local crossroads = {
-			{{192,192,192}, "cutscene", "crossroads"}
-		}
-		local ev = crossroads[math.random(#crossroads)]
-		cross.event = {color = ev[1], name = ev[3], kind = ev[2]}
+		if math.random(2) == 1 then
+			local crossroads = {
+				{{192,192,192}, "crossroads", "crossroads"},
+				{{0,192,255}, "leap", "quantumleap"}
+			}
+			local ev = crossroads[math.random(#crossroads)]
+			cross.event = {color = ev[1], name = ev[3], kind = ev[2]}
+		end
 	end
 	
 	return maze

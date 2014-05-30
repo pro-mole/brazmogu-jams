@@ -37,10 +37,16 @@ end
 function love.load()
 	title_card = loadCard("title")
 	cards["end_good"] = {loadCard("end")}
+	
 	cards["end_bad"] = {loadCard("badend")}
-	cards["deadend"] = {loadCard("badend")}
-	cards["setback"] = {loadCard("badend")}
-	cards["crossroads"] = {loadCard("end")}
+
+	cards["comfort"] = {loadCard("comfort1"), loadCard("comfort2")}
+	
+	cards["setback"] = {loadCard("setback1"), loadCard("setback2")}
+
+	cards["crossroads"] = {loadCard("crossroads1"), loadCard("crossroads2")}
+
+	cards["quantumleap"] = {loadCard("quantumleap1"), loadCard("quantumleap2")}
 
 	scale = love.window.getWidth()/32
 	print(string.format("%dX", scale))
@@ -52,7 +58,9 @@ function love.keypressed(key, isrepeat)
 	if top == "title" then
 		if key == "escape" then love.event.quit() end
 		if key == " " then
-			player_x, player_y = 16,30
+			player_memory = {16,30} -- Record our initial position for setbacks
+			player_x, player_y = unpack(player_memory)
+
 			_maze = Maze.generate(15,"up")
 			_maze:print()
 			table.insert(game_stack,"maze")
@@ -94,12 +102,27 @@ function love.keypressed(key, isrepeat)
 	elseif top == "event" then
 		if event.page == #cards[event.name] then
 			if key == " " then
-				if event.kind == "end" then
+				local kind = event.kind
+				event = {}
+				if kind == "end" then
 					game_stack:rewind()
+				elseif kind == "deadend" then
+					event = {kind = "end", name = "end_bad", page = 1}
+				elseif kind == "setback" then
+					player_x, player_y = unpack(player_memory)
+					table.remove(game_stack)
+				elseif kind == "crossroads" then
+					player_memory = {player_x, player_y}
+					table.remove(game_stack)
+				elseif kind == "leap" then
+					repeat
+						player_x, player_y = math.random(_maze.board_size), math.random(_maze.board_size)
+						local _T = _maze:getTile(player_x, player_y)
+					until _T.content == " " and (player_x % 2 == 1 or player_y %2 == 1)
+					table.remove(game_stack)
 				else
 					table.remove(game_stack)
 				end
-				event = {}
 			end
 		end
 		
