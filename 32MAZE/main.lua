@@ -4,6 +4,7 @@ require("maze")
 
 sound_step = love.sound.newSoundData("assets/sound/step.wav")
 steps = {}
+stepwait = 0
 
 function step()
 	if #steps >= 10 then
@@ -52,6 +53,14 @@ function love.load()
 	print(string.format("%dX", scale))
 end
 
+function love.resize(w, h)
+	if w < h then
+		scale = love.window.getWidth()/32
+	else
+		scale = love.window.getHeight()/32
+	end
+end
+
 function love.keypressed(key, isrepeat)
 	local top = game_stack[#game_stack]
 	
@@ -76,7 +85,8 @@ function love.keypressed(key, isrepeat)
 				event = {kind = "end", name = "good_end", page = 1}
 			else
 				local T = _maze:getTile(_x,_y)
-				if T.content ~= "#" then
+				if T.content ~= "#" and stepwait == 0 then
+					stepwait = 1/4
 					player_x = _x
 					player_y = _y
 					step()
@@ -147,6 +157,10 @@ function love.keypressed(key, isrepeat)
 end
 
 function love.update(dt)
+	if stepwait > 0 then
+		stepwait = stepwait - dt
+		if stepwait < 0 then stepwait = 0 end
+	end
 end
 
 function love.draw()
@@ -158,6 +172,7 @@ function love.draw()
 		love.graphics.draw(title_card, 0, 0)
 	elseif top == "maze" then -- Draw Game Maze
 		-- Do NOT use love.graphics.line, since LÖVE seems to draw scaled lines centered on the end points
+		love.graphics.setColor(255,255,255,128)
 		love.graphics.rectangle("fill",10,0,1,32)
 		love.graphics.rectangle("fill",21,0,1,32)
 		love.graphics.rectangle("fill",0,10,32,1)

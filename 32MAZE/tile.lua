@@ -19,5 +19,17 @@ function Tile:draw()
 	if self.content == "#" then
 		love.graphics.setColor(unpack(self.color))
 		love.graphics.rectangle("fill", 1, 1, 8, 8)
+		
+		local T_up = _maze:getTile(self.x, self.y-1)
+		if T_up and T_up.content == "#" then love.graphics.rectangle("fill", 1, 0, 8, 1) end
+		
+		local T_down = _maze:getTile(self.x, self.y+1)
+		if T_down and T_down.content == "#" then love.graphics.rectangle("fill", 1, 9, 8, 1) end
+		
+		local T_left = _maze:getTile(self.x-1, self.y)
+		if T_left and T_left.content == "#" then love.graphics.rectangle("fill", 0, 1, 1, 8) end
+		
+		local T_right = _maze:getTile(self.x+1, self.y)
+		if T_right and T_right.content == "#" then love.graphics.rectangle("fill", 9, 1, 1, 8) end
 	end
 end

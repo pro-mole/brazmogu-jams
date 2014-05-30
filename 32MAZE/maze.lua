@@ -66,33 +66,32 @@ function Maze.generate(size, exit_wall)
 		{0xff, 0x00, 0x80, 0xff},{0x80, 0x00, 0xff, 0xff},{0x00, 0x00, 0xff, 0xff}
 	}
 	local sect = 3
-	local sect_size = board_size/sect
+	local sect_size = math.ceil(board_size/sect)
 	for i = 1,sect^2 do
 		local h,k = (i-1) % sect + 1, math.ceil(i/sect)
-		local _x = math.random(size/sect) + size/sect * (h-1)
-		local _y = math.random(size/sect) + size/sect * (k-1)
+		local _x = math.random(sect_size) + sect_size * (h-1)
+		local _y = math.random(sect_size) + sect_size * (k-1)
 		
-		table.insert(Q, {x = _x*2, y = _y*2, color = colors[i]})
-		print(unpack({h, k, _x*2, _y*2, unpack(colors[i])}))
+		table.insert(Q, {x = _x, y = _y, color = colors[i]})
+		print(unpack({h, k, _x, _y, unpack(colors[i])}))
 	end
 	-- Now, colorize everything in terms of what's close, blending color
 	for X = 1,board_size do
 		for Y = 1,board_size do
 			local T = maze:getTile(X,Y)
-			local q = math.ceil(Y / sect_size) + math.floor(X / sect/size)
+			local q = math.floor(Y / sect_size) * 3 + math.ceil(X / sect/size)
 			local _Q = Q[q]
-			if X == _Q.x and Y == _Q.y then
-				T.color = Q[q].color
-			else
-				T.color = {0,0,0,0}
-				for i,_Q in ipairs(Q) do
-					local d = math.abs(X - _Q.x) + math.abs(Y - _Q.y)
-					for j,C in ipairs(_Q.color) do
-						if d < sect_size*3 then T.color[j] = T.color[j] + C/d end
-					end
+			-- for j,C in ipairs(_Q.color) do T.color[j] = C end
+			T.color = {128,128,128,255}
+			for i,_Q in ipairs(Q) do
+				local d = math.sqrt((X - _Q.x)^2 + (Y - _Q.y)^2) + 1 -- we don't want zero distance here
+				local alpha = 1/d
+				for j,C in ipairs(_Q.color) do
+					T.color[j] = (1-alpha)*T.color[j] + alpha*C
 				end
-				T.color[4] = 255
 			end
+			--print(unpack(T.color))
+			--T.color[4] = 255
 		end
 	end
 	
