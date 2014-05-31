@@ -12,7 +12,7 @@ Node.__index = Node
 	
 Node.tiles = {
 	['crossroads'] = love.graphics.newQuad(0,0,10,10,60,60),
-	['leap'] = love.graphics.newQuad(0,0,10,10,60,60),
+	['leap'] = love.graphics.newQuad(30,0,10,10,60,60),
 	['setback'] = love.graphics.newQuad(10,0,10,10,60,60),
 	['deadend'] = love.graphics.newQuad(20,0,10,10,60,60)
 }
@@ -22,11 +22,15 @@ function Node.new(x,y)
 end
 
 function Node:__tostring()
-	if self.cost < 10 then
-		return self.cost
+	if self.cost < 36 then
+		if self.cost < 10 then
+			return self.cost
+		else
+			local alpha = "abcdefghijklmnopqrstuvwxyz"
+			return alpha:sub(self.cost-9, self.cost-9)
+		end
 	else
-		local alpha = "abcdefghijklmnopqrstuvwxyz"
-		return alpha:sub(self.cost-9, self.cost-9)
+		return " "
 	end
 end
 

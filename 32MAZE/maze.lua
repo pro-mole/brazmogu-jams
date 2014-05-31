@@ -35,7 +35,7 @@ function Maze.generate(size, exit_wall)
 	-- maze:generatRandomly()
 	
 	-- Prim-based generation: a lot cleaner, at least
-	if not maze:generatePrim({8,15}) then
+	if not maze:generatePrim({math.ceil(size/2),size}) then
 		maze:print()
 		seed = seed + 1
 		maze = Maze.generate(size)
@@ -45,15 +45,19 @@ function Maze.generate(size, exit_wall)
 	if exit_wall == "up" then
 		maze.end_x = math.random(size)*2
 		maze.end_y = 1
+		maze:updateNode(maze.end_x/2,1,exit_wall,true)
 	elseif exit_wall == "down" then
 		maze.end_x = math.random(size)*2
-		maze.end_y = size
+		maze.end_y = size*2+1
+		maze:updateNode(maze.end_x/2,size,exit_wall,true)
 	elseif exit_wall == "left" then
 		maze.end_y = math.random(size)*2
 		maze.end_x = 1
+		maze:updateNode(1,maze.end_y/2,exit_wall,true)
 	elseif exit_wall == "right" then
 		maze.end_y = math.random(size)*2
-		maze.end_x = size
+		maze.end_x = size*2+1
+		maze:updateNode(size,maze.end_y/2,exit_wall,true)
 	end
 	maze:setTile(maze.end_x, maze.end_y, " ")
 	
@@ -124,8 +128,9 @@ function Maze.generate(size, exit_wall)
 	for _,cross in ipairs(C) do
 		if math.random(2) == 1 then
 			local crossroads = {
-				{{192,192,192}, "crossroads", "crossroads"},
-				{{0,192,255}, "leap", "quantumleap"}
+				{{255,192,0}, "crossroads", "crossroads"},
+				{{0,192,255}, "leap", "quantumleap"},
+				{{192,192,192}, "leap", "shortcut"},
 			}
 			local ev = crossroads[math.random(#crossroads)]
 			cross.event = {color = ev[1], name = ev[3], kind = ev[2]}

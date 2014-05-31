@@ -7,6 +7,10 @@ Tile = {
 }
 Tile.__index = Tile
 
+Tile.tiles = {
+	['road'] = love.graphics.newQuad(0,10,10,10,60,60)
+}
+
 function Tile:__tostring()
 	return self.content
 end
@@ -31,5 +35,8 @@ function Tile:draw()
 		
 		local T_right = _maze:getTile(self.x+1, self.y)
 		if T_right and T_right.content == "#" then love.graphics.rectangle("fill", 9, 1, 1, 8) end
+	else
+		love.graphics.setColor(unpack(self.color))
+		love.graphics.draw(Maze.tileset, Tile.tiles.road,0,0)
 	end
 end

@@ -37,9 +37,9 @@ end
 
 function love.load()
 	title_card = loadCard("title")
-	cards["end_good"] = {loadCard("end")}
+	cards["end_good"] = {loadCard("ending1"), loadCard("ending2"), loadCard("end"), loadCard("credits")}
 	
-	cards["end_bad"] = {loadCard("badend")}
+	cards["end_bad"] = {loadCard("badend"), loadCard("tryagain")}
 
 	cards["comfort"] = {loadCard("comfort1"), loadCard("comfort2")}
 	
@@ -48,6 +48,8 @@ function love.load()
 	cards["crossroads"] = {loadCard("crossroads1"), loadCard("crossroads2")}
 
 	cards["quantumleap"] = {loadCard("quantumleap1"), loadCard("quantumleap2")}
+
+	cards["shortcut"] = {loadCard("shortcut1"), loadCard("shortcut2")}
 
 	scale = love.window.getWidth()/32
 	print(string.format("%dX", scale))
@@ -67,10 +69,11 @@ function love.keypressed(key, isrepeat)
 	if top == "title" then
 		if key == "escape" then love.event.quit() end
 		if key == " " then
-			player_memory = {16,30} -- Record our initial position for setbacks
+			local maze_size = 25
+			player_memory = {maze_size+1,maze_size*2} -- Record our initial position for setbacks
 			player_x, player_y = unpack(player_memory)
 
-			_maze = Maze.generate(15,"up")
+			_maze = Maze.generate(maze_size,"up")
 			_maze:print()
 			table.insert(game_stack,"maze")
 			print (game_stack[#game_stack])
@@ -82,7 +85,7 @@ function love.keypressed(key, isrepeat)
 			local _y = player_y + delta[key][2]
 			if _x < 1 or _x > _maze.board_size or _y < 1 or _y > _maze.board_size then
 				table.insert(game_stack,"event")
-				event = {kind = "end", name = "good_end", page = 1}
+				event = {kind = "end", name = "end_good", page = 1}
 			else
 				local T = _maze:getTile(_x,_y)
 				if T.content ~= "#" and stepwait == 0 then
@@ -117,7 +120,7 @@ function love.keypressed(key, isrepeat)
 				if kind == "end" then
 					game_stack:rewind()
 				elseif kind == "deadend" then
-					event = {kind = "end", name = "end_bad", page = 1}
+					event = {kind = "end", name = "end_bad", page = 0}
 				elseif kind == "setback" then
 					player_x, player_y = unpack(player_memory)
 					table.remove(game_stack)
