@@ -3,6 +3,15 @@
 require("maze")
 
 sound_step = love.sound.newSoundData("assets/sound/step.wav")
+
+sound_crow = love.audio.newSource("assets/sound/crow.wav", "static")
+crow_wait = 0
+sound_drip = love.audio.newSource("assets/sound/drops.wav", "static")
+drip_wait = 0
+
+bgm_wind = love.audio.newSource("assets/sound/wind.mp3", "stream")
+bgm_wind:setLooping(true)
+
 steps = {}
 stepwait = 0
 
@@ -20,6 +29,9 @@ end
 
 game_stack = {"title"}
 function game_stack:rewind()
+	bgm_wind:stop()
+	crow_wait = 0
+	drip_wait = 0
 	repeat
 		table.remove(self)
 	until #self == 1
@@ -42,6 +54,8 @@ function love.load()
 	cards["end_bad"] = {loadCard("badend"), loadCard("tryagain")}
 
 	cards["comfort"] = {loadCard("comfort1"), loadCard("comfort2")}
+
+	cards["giveup"] = {loadCard("giveup1"), loadCard("giveup2"), loadCard("giveup3")}
 	
 	cards["setback"] = {loadCard("setback1"), loadCard("setback2")}
 
@@ -74,9 +88,14 @@ function love.keypressed(key, isrepeat)
 			player_x, player_y = unpack(player_memory)
 
 			_maze = Maze.generate(maze_size,"up")
-			_maze:print()
+			-- _maze:print()
 			table.insert(game_stack,"maze")
-			print (game_stack[#game_stack])
+			-- print (game_stack[#game_stack])
+
+			crow_wait = 5 + math.random(10) + math.random()
+			drip_wait = 2 + math.random(4) + math.random()
+			bgm_wind:rewind()
+			bgm_wind:play()
 		end
 	elseif top == "maze" then
 		if key == "up" or key == "down" or key == "left" or key == "right" then
@@ -163,6 +182,26 @@ function love.update(dt)
 	if stepwait > 0 then
 		stepwait = stepwait - dt
 		if stepwait < 0 then stepwait = 0 end
+	end
+
+	if game_stack[#game_stack] == "maze" then
+		if drip_wait > 0 then
+			drip_wait = drip_wait - dt
+			if drip_wait <= 0 then
+				sound_drip:setVolume(0.75 + math.random()*0.25)
+				sound_drip:play()
+				drip_wait = 2 + math.random(4) + math.random()
+			end
+		end
+
+		if crow_wait > 0 then
+			crow_wait = drip_wait - dt
+			if crow_wait <= 0 then
+				sound_crow:setVolume(0.50 + math.random()*0.50)
+				sound_crow:play()
+				crow_wait = 5 + math.random(10) + math.random()
+			end
+		end
 	end
 end
 

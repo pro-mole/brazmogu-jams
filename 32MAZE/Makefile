@@ -1,7 +1,7 @@
 #A simple Makefile to create our package
 
 EXECNAME=MAZE
-VERSION=0.1
+VERSION=1.0
 PACKNAME=$(EXECNAME)-$(VERSION).love
 
 all: $(PACKNAME)

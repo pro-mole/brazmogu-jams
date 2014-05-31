@@ -119,7 +119,8 @@ function Maze.generate(size, exit_wall)
 	for _,term in ipairs(T) do
 		local deadends = {
 			{{255,0,0}, "deadend", "comfort"},
-			{{255,128,0}, "setback", "setback"}
+			{{255,128,0}, "setback", "setback"},
+			{{32,32,128}, "deadend", "giveup"}
 		}
 		local ev = deadends[math.random(#deadends)]
 		term.event = {color = ev[1], name = ev[3], kind = ev[2], card = ev[4]}
